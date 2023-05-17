@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS 
+from flask import (Flask, redirect, render_template, request,
+                   send_from_directory, url_for)
 import mysql.connector
 import bcrypt
+import os
 
 app = Flask(__name__)
-CORS(app)
 
 # establish database connection
 mydb = mysql.connector.connect(
@@ -17,6 +17,13 @@ mydb = mysql.connector.connect(
 
 # create cursor
 mycursor = mydb.cursor()
+
+
+@app.route('/')
+def index():
+   print('Request for index page received')
+   return render_template('index.html')
+
 
 # Define the routes for CRUD operations
 
@@ -78,37 +85,6 @@ def check_certificate(certificate_id):
         return jsonify({'studentId': student[0], 'fname': student[1], 'lname':student[2] })
     else:
         return jsonify({'message': 'certificate not found'}), 404
-
-
-
-# Fetch student details
-# @app.route('/student/<student_id>', methods=['GET'])
-# def get_student(student_id):
-#     print("Student ID is  : " + student_id )
-#     mycursor.execute("SELECT * FROM student WHERE studentId = %s", (student_id,))
-#     student = mycursor.fetchone()
-#     print(student)
-#     if student:
-#         return jsonify({'studentId': student[0], 'fName': student[1], 'lName': student[2],'graduationYear': student[3], 'email': student[4],'password': student[5],'certNo': student[6]})
-#     else:
-#         return jsonify({'message': 'student not found'}), 404
-
-# Update an existing user
-# @app.route('/users/<string:user_id>', methods=['PUT'])
-# def update_user(user_id):
-#     name = request.json['name']
-#     email = request.json['email']
-#     password = request.json['password']
-#     mycursor.execute("UPDATE users SET name=?, email=?, password=? WHERE id=?", (name, email, password, user_id))
-#     mydb.commit()
-#     return jsonify({'message': 'User updated successfully'})
-
-# Delete an existing user
-# @app.route('/users/<int:user_id>', methods=['DELETE'])
-# def delete_user(user_id):
-#     mycursor.execute("DELETE FROM users WHERE id=?", (user_id,))
-#     mydb.commit()
-#     return jsonify({'message': 'User deleted successfully'})
 
 # Run the Flask app
 if __name__ == '__main__':

@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "undefined/subscriptions/678c82fe-694c-4cb0-9222-46094cb1e1be/resourceGroups/ITIS-RG/providers/Microsoft.Web/sites/flaskinfrafinal",
+    "appService.deploySubpath": "."
+}
