@@ -36,6 +36,6 @@ getdata = {
 print("In test " + url4)
 #response = requests.post(url2, data=json.dumps(getdata), headers=headers)
 #response = requests.get(url2,params=getdata)
-#response = requests.get(url3)
-response = requests.get(url4)
+response = requests.get(url3)
+#response = requests.get(url4)
 print(response.json())

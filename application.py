@@ -55,10 +55,9 @@ def get_student():
     print("Student email ID is  : " + request.json['email'])
     print("Password is " + request.json['password'])
     mycursor.execute("SELECT password FROM student WHERE email = %s", (request.json['email'],))
-    student_hashed_password = mycursor.fetchone()
-    mycursor.consume_results()
+    student_hashed_password = mycursor.fetchall()
     print(student_hashed_password)
-    if bcrypt.checkpw(request.json['password'].encode('utf-8'), student_hashed_password[0].encode()): 
+    if bcrypt.checkpw(request.json['password'].encode('utf-8'), student_hashed_password[0][0].encode()): 
         return jsonify({'Email Id': request.json['email'], 'status':'success'}), 200
     else:
         return jsonify({'Email Id': request.json['email'], 'status':'failed'}), 404
@@ -68,8 +67,8 @@ def get_student():
 def get_certificate(email_id):
     print("Student email ID is  : " + email_id )
     mycursor.execute("SELECT * FROM certificate JOIN student on certificate.certNo = student.certNo WHERE student.email = %s", (email_id,))
-    certificate = mycursor.fetchone()
-    mycursor.consume_results()
+    certificate = mycursor.fetchall()
+    certificate =certificate[0]
     print(certificate)
     if certificate:
         return jsonify({'certNo': certificate[0], 'document': str(certificate[1])})
@@ -81,8 +80,8 @@ def get_certificate(email_id):
 def check_certificate(certificate_id):
     print("Certificate ID is  : " + certificate_id)
     mycursor.execute("SELECT student.studentId, student.fname, student.lname FROM certificate JOIN student on certificate.certNo = student.certNo WHERE certificate.certNo = %s", (certificate_id,))
-    student = mycursor.fetchone()
-    mycursor.consume_results()
+    student = mycursor.fetchall()
+    student =student[0]
     print(student)
     if student:
         return jsonify({'studentId': student[0], 'fname': student[1], 'lname':student[2] })
