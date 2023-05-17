@@ -18,13 +18,6 @@ mydb = mysql.connector.connect(
 # create cursor
 mycursor = mydb.cursor()
 
-
-@app.route('/')
-def index():
-   print('Request for index page received')
-   return render_template('index.html')
-
-
 # Define the routes for CRUD operations
 
 # Register a new student
