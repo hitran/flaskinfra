@@ -1,6 +1,6 @@
 import requests
 import json
-BASE = "https://testflaskinfra.azurewebsites.net/"
+BASE = " http://127.0.0.1:5000/"
 
 url = BASE + 'register'
 url2 = BASE + 'login'
