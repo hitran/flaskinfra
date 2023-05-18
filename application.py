@@ -64,12 +64,12 @@ def get_student():
 @app.route('/certificate/<email_id>', methods=['GET'])
 def get_certificate(email_id):
     print("Student email ID is  : " + email_id )
-    mycursor.execute("SELECT * FROM certificate JOIN student on certificate.certNo = student.certNo WHERE student.email = %s", (email_id,))
+    mycursor.execute("SELECT student.studentId, student.fname, student.lname, certificate.certNo,certificate.document FROM certificate JOIN student on certificate.certNo = student.certNo WHERE student.email = %s", (email_id,))
     certificate = mycursor.fetchall()
-    certificate =certificate[0]
-    print(certificate)
     if certificate:
-        return jsonify({'certNo': certificate[0], 'document': str(certificate[1])})
+        print(certificate)
+        certificate =certificate[0]
+        return jsonify({'studentId': certificate[0], 'fname': certificate[1], 'lname':certificate[2], 'certNo':certificate[3], 'document': str(certificate[4])}), 200
     else:
         return jsonify({'message': 'certificate not found'}), 404
 
@@ -77,13 +77,13 @@ def get_certificate(email_id):
 @app.route('/checkcertificate/<certificate_id>', methods=['GET'])
 def check_certificate(certificate_id):
     print("Certificate ID is  : " + certificate_id)
-    mycursor.execute("SELECT student.studentId, student.fname, student.lname FROM student JOIN certificate on certificate.certNo = student.certNo WHERE certificate.certNo = %s", (certificate_id,))
+    mycursor.execute("SELECT student.studentId, student.fname, student.lname, certificate.certNo FROM student JOIN certificate on certificate.certNo = student.certNo WHERE certificate.certNo = %s", (certificate_id,))
     student = mycursor.fetchall()
     print(student)
-    student =student[0]
-    print(student)
     if student:
-        return jsonify({'studentId': student[0], 'fname': student[1], 'lname':student[2] })
+        student =student[0]
+        print(student)
+        return jsonify({'studentId': student[0], 'fname': student[1], 'lname':student[2], 'certNo':student[3] }),200
     else:
         return jsonify({'message': 'certificate not found'}), 404
 

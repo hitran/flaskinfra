@@ -5,7 +5,7 @@ BASE = " http://127.0.0.1:5000/"
 url = BASE + 'register'
 url2 = BASE + 'login'
 url3 = BASE + 'certificate/S3976312@student.rmit.edu.au'
-url4 = BASE + 'checkcertificate/246311'
+url4 = BASE + 'checkcertificate/24311'
 
 data = {    'studentId': 'S3976312',
             'fName': 'Tanvi',
@@ -37,6 +37,6 @@ getdata = {
 print("In test " + url3)
 #response = requests.post(url, data=json.dumps(data), headers=headers)
 #response = requests.post(url2, data=json.dumps(getdata), headers=headers)
-#response = requests.get(url3)
-response = requests.get(url4)
+response = requests.get(url3)
+#response = requests.get(url4)
 print(response.json())
