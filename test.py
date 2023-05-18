@@ -4,16 +4,16 @@ BASE = " http://127.0.0.1:5000/"
 
 url = BASE + 'register'
 url2 = BASE + 'login'
-url3 = BASE + 'certificate/S3976311@student.rmit.edu.au'
+url3 = BASE + 'certificate/S3976312@student.rmit.edu.au'
 url4 = BASE + 'checkcertificate/246311'
 
-data = {    'studentId': 'S3976311',
-            'fName': 'Shubham',
+data = {    'studentId': 'S3976312',
+            'fName': 'Tanvi',
             'lName': 'Pai', 
-            'email': 'S3976311@student.rmit.edu.au', 
-            'password': 'hahalol', 
+            'email': 'S3976312@student.rmit.edu.au', 
+            'password': 'tanvi@123', 
             'graduationYear': '2024', 
-            'certNo': '246311'}
+            'certNo': '246312'}
 
 testdata = {
             "fName":"Hi",
@@ -28,14 +28,15 @@ headers = {'Content-type': 'application/json'}
 
 
 getdata = {
-    "email": "S3976311@student.rmit.edu.au",
-    "password": "hahalol"
+    "email": "S3976312@student.rmit.edu.au",
+    "password": "tanvi@123"
+#    "password": "1111"
 }
 
 
-print("In test " + url4)
+print("In test " + url3)
+#response = requests.post(url, data=json.dumps(data), headers=headers)
 #response = requests.post(url2, data=json.dumps(getdata), headers=headers)
-#response = requests.get(url2,params=getdata)
-response = requests.get(url3)
-#response = requests.get(url4)
+#response = requests.get(url3)
+response = requests.get(url4)
 print(response.json())

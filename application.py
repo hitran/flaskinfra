@@ -37,6 +37,11 @@ def register_student():
         statement = 'INSERT INTO student (studentId, fname, lname, graduationYear, email, password, certNo) VALUES (%s,%s,%s,%s,%s,%s,%s)'
         values = (studentId, fName, lName, graduationYear, email, hashed_password, certNo)
         mycursor.execute(statement, values)
+        print("Student data inserted")
+        statement2 = 'INSERT INTO certificate (certNo, document) VALUES (%s,%s)'
+        values2 = (certNo,'JVBERi0xLjMKJf////8KOCAwIG9iago8PCAvVHlwZSAvUGFnZXMgMiAwIFIgL1hPYmplY3QgMCBSCi9JbmZvIDUgMCBSCi9NZWRpYUJveCBbMCAwIDUyNSA1MDAgXQovVHlwZSAvRXh0R1N0YXRlCi9DcmVhdG9yIC9EZXZpY2VSR0IKPj4KZW5kb2JqCjQgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9Db3VudCAxCi9LaWRzIFsgNSAwIFIgXQovQ291bnQgMQo+PgplbmRvYmoKNCAwIG9iago8PCAvTGVuZ3RoIDUgMCBSCi9JbmZvIDYgMCBSCi9NZWRpYUJveCBbMCAwIDUyNSA1MDAgXQovVHlwZSAvRm9udAovU3VidHlwZSAvVHlwZTEKL01hdHJpeCBbMSAwIFIgL1hJZGVudGl0eQovQ29sb3JTcGFjZSAvRGV2aWNlUkdCCj4+CmVuZG9iago1IDAgb2JqCjw8IC9MZW5ndGggNSAwIFIKL0luZm8gNiAwIFIKL01lZGlhQm94IFswIDAgNTI1IDUwMCBdCi9UeXBlIC9FeHRHU3RhdGUKL0NpcmNsZSAvRmlyc3QKL0NvbG9yU3BhY2UgL0RldmljZVJHQgo+PgplbmRvYmoKMyAwIG9iago8PCAvVHlwZSAvUGFnZXMgMyAwIFIgL1hPYmplY3QgMCBSCi9JbmZvIDggMCBSCi9NZWRpYUJveCBbMCAwIDUyNSA1MDAgXQovVHlwZSAvRm9udAovU3VidHlwZSAvVHlwZTEKL01hdHJpeCBbMSAwIFIgL1hJZGVudGl0eQovQ29sb3JTcGFjZSAvRGV2aWNlUkdCCj4+CmVuZG9iagozIDAgb2JqCjw8IC9MZW5ndGggMyAwIFIKL0luZm8gOSAwIFIKL01lZGlhQm94IFswIDAgNTI1IDUwMCBdCi9UeXBlIC9FeHRHU3RhdGUKL0NpcmNsZSAvRmlyc3QKL0NvbG9yU3BhY2UgL0RldmljZVJHQgo+PgplbmRvYmoKNSAwIG9iago8PCAvVHlwZSAvUGFnZXMg')
+        mycursor.execute(statement2, values2)
+        print("Certificate details generated")
         mydb.commit()
         return jsonify({'message': 'Student record saved successfully'}), 201
     except Exception as e:
@@ -72,8 +77,9 @@ def get_certificate(email_id):
 @app.route('/checkcertificate/<certificate_id>', methods=['GET'])
 def check_certificate(certificate_id):
     print("Certificate ID is  : " + certificate_id)
-    mycursor.execute("SELECT student.studentId, student.fname, student.lname FROM certificate JOIN student on certificate.certNo = student.certNo WHERE certificate.certNo = %s", (certificate_id,))
+    mycursor.execute("SELECT student.studentId, student.fname, student.lname FROM student JOIN certificate on certificate.certNo = student.certNo WHERE certificate.certNo = %s", (certificate_id,))
     student = mycursor.fetchall()
+    print(student)
     student =student[0]
     print(student)
     if student:
