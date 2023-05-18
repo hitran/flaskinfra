@@ -54,11 +54,14 @@ def get_student():
     print("Password is " + request.json['password'])
     mycursor.execute("SELECT password FROM student WHERE email = %s", (request.json['email'],))
     student_hashed_password = mycursor.fetchall()
-    print(student_hashed_password)
-    if bcrypt.checkpw(request.json['password'].encode('utf-8'), student_hashed_password[0][0].encode()): 
-        return jsonify({'Email Id': request.json['email'], 'status':'success'}), 200
+    if student_hashed_password:
+        print(student_hashed_password)
+        if bcrypt.checkpw(request.json['password'].encode('utf-8'), student_hashed_password[0][0].encode()): 
+            return jsonify({'Email Id': request.json['email'], 'status':'success'}), 200
+        else:
+            return jsonify({'Email Id': request.json['email'], 'status':'failed', 'reason': 'incorrect password'}), 404
     else:
-        return jsonify({'Email Id': request.json['email'], 'status':'failed'}), 404
+        return jsonify({'Email Id': request.json['email'], 'status':'failed', 'reason': 'incorrect email'}), 404
 
 # Fetch certificate details
 @app.route('/certificate/<email_id>', methods=['GET'])
