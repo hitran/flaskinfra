@@ -12,18 +12,6 @@ class StringLengthError(Exception):
 app = Flask(__name__)
 app.secret_key = 'infrafinal'
 
-# # establish database connection
-# mydb = mysql.connector.connect(
-#     host="db4free.net",
-#     port=3306,
-#     user="infrafinal",
-#     password="infrafinal2505",
-#     database="studentinfra"
-#     )
-
-# # create cursor
-#     mycursor = mydb.cursor()
-
 # Define the routes for CRUD operations
 
 # Register a new student
@@ -98,8 +86,8 @@ def login():
         if student:
             print(student)
             if bcrypt.checkpw(request.json['password'].encode('utf-8'), student[0][0].encode()): 
-                session['logged_in'] = True
-                session['username'] = request.json['email']
+                # session['logged_in'] = True
+                # session['username'] = request.json['email']
                 return jsonify({'Email Id': request.json['email'], 'status':'success', 'role' : str(student[0][1]) }), 200
             else:
                 return jsonify({'Email Id': request.json['email'], 'status':'failed', 'reason': 'incorrect email/password'}), 404
@@ -127,8 +115,8 @@ def get_certificate(email_id):
     mycursor = mydb.cursor()
     try:   
         print("Student email ID is  : " + email_id ) 
-        if not (session.get('username') == email_id):
-            return jsonify({'message': 'Invalid user data access','exception':  'No rights to view','status' : 'failed'}), 404
+        # if not (session.get('username') == email_id):
+        #     return jsonify({'message': 'Invalid user data access','exception':  'No rights to view','status' : 'failed'}), 404
         mycursor.execute("SELECT student.studentId, student.fname, student.lname, certificate.certNo,certificate.document FROM certificate JOIN student on certificate.certNo = student.certNo WHERE student.email = %s", (email_id,))
         certificate = mycursor.fetchall()
         if certificate:
@@ -177,8 +165,8 @@ def check_certificate(certificate_id):
 @app.route('/updateperson/<email_id>', methods=['PUT'])
 def update_person(email_id):
     # establish database connection
-    if not (session['username'] == 'root@root.com'):
-        return jsonify({'message': 'Student record not updated','exception':  'No rights to update','status' : 'failed'})
+    # if not (session['username'] == 'root@root.com'):
+    #     return jsonify({'message': 'Student record not updated','exception':  'No rights to update','status' : 'failed'})
     mydb = mysql.connector.connect(
     host="db4free.net",
     port=3306,
@@ -214,7 +202,7 @@ def update_person(email_id):
 @app.route('/logout', methods=['PUT'])
 def logout():
     # Clear the user's session data
-    session.clear()
+    # session.clear()
     return jsonify({'status':'success'})
 
 # Run the Flask app
