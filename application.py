@@ -4,11 +4,13 @@ from flask_session import Session
 import mysql.connector
 import bcrypt
 import os
+import re
 
 class StringLengthError(Exception):
     pass
 
 app = Flask(__name__)
+app.secret_key = 'infrafinal'
 
 # # establish database connection
 # mydb = mysql.connector.connect(
@@ -44,12 +46,12 @@ def register_student():
         lName = request.json['lName']
         email = request.json['email']
         pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-        # if not re.match(pattern, email):
-        #     raise ConstraintError("Incorrect email format")
+        if not re.match(pattern, email):
+            raise ConstraintError("Incorrect email format")
         password = request.json['password']
         pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[\W_]).+$'
-        # if len(password) < 8 and not re.match(pattern, password):
-        #     raise ConstraintError("Incorrect password format")
+        if len(password) < 8 and not re.match(pattern, password):
+            raise ConstraintError("Incorrect password format")
         password_bytes_value = password.encode('utf-8')
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password_bytes_value, salt)
@@ -68,16 +70,16 @@ def register_student():
         mycursor.execute(statement2, values2)
         print("Certificate details generated")
         mydb.commit()
-        return jsonify({'message': 'Student record saved successfully'}), 201
+        return jsonify({'message': 'Student record saved successfully','status':'success'}), 201
     except Exception as e:
-        return jsonify({'message': 'Student record not saved','exception':  str(e)}), 500
+        return jsonify({'message': 'Student record not saved','exception':  str(e),'status':'failed'}), 500
     finally:
         mycursor.close()
         mydb.close()
 
 # Log student in
 @app.route('/login', methods=['POST'])
-def get_student():
+def login():
     # establish database connection
     mydb = mysql.connector.connect(
     host="db4free.net",
@@ -91,18 +93,20 @@ def get_student():
     try:
         print("Student email ID is  : " + request.json['email'])
         print("Password is " + request.json['password'])
-        mycursor.execute("SELECT password FROM student WHERE email = %s", (request.json['email'],))
-        student_hashed_password = mycursor.fetchall()
-        if student_hashed_password:
-            print(student_hashed_password)
-            if bcrypt.checkpw(request.json['password'].encode('utf-8'), student_hashed_password[0][0].encode()): 
-                return jsonify({'Email Id': request.json['email'], 'status':'success'}), 200
+        mycursor.execute("SELECT password, role FROM student WHERE email = %s", (request.json['email'],))
+        student = mycursor.fetchall()
+        if student:
+            print(student)
+            if bcrypt.checkpw(request.json['password'].encode('utf-8'), student[0][0].encode()): 
+                session['logged_in'] = True
+                session['username'] = request.json['email']
+                return jsonify({'Email Id': request.json['email'], 'status':'success', 'role' : str(student[0][1]) }), 200
             else:
                 return jsonify({'Email Id': request.json['email'], 'status':'failed', 'reason': 'incorrect password'}), 404
         else:
             return jsonify({'Email Id': request.json['email'], 'status':'failed', 'reason': 'incorrect email'}), 404
     except Exception as e:
-        return jsonify({'message': 'Student record not saved','exception':  str(e)     }), 500
+        return jsonify({'message': 'Student record not found','exception':  str(e),'status':'failed'}), 500
     finally:
         mycursor.close()
         mydb.close()
@@ -110,6 +114,7 @@ def get_student():
 # Fetch certificate details
 @app.route('/certificate/<email_id>', methods=['GET'])
 def get_certificate(email_id):
+    
     # establish database connection
     mydb = mysql.connector.connect(
     host="db4free.net",
@@ -120,18 +125,20 @@ def get_certificate(email_id):
     )
     # create cursor
     mycursor = mydb.cursor()
-    try:    
-        print("Student email ID is  : " + email_id )
+    try:   
+        print("Student email ID is  : " + email_id ) 
+        if not (session.get('username') == email_id):
+            return jsonify({'message': 'Invalid user data access','exception':  'No rights to view','status' : 'failed'}), 404
         mycursor.execute("SELECT student.studentId, student.fname, student.lname, certificate.certNo,certificate.document FROM certificate JOIN student on certificate.certNo = student.certNo WHERE student.email = %s", (email_id,))
         certificate = mycursor.fetchall()
         if certificate:
             print(certificate)
             certificate =certificate[0]
-            return jsonify({'studentId': certificate[0], 'fname': certificate[1], 'lname':certificate[2], 'certNo':certificate[3], 'document': str(certificate[4])}), 200
+            return jsonify({'studentId': certificate[0], 'fname': certificate[1], 'lname':certificate[2], 'certNo':certificate[3], 'document': str(certificate[4]),'status':'success'}), 200
         else:
-            return jsonify({'message': 'certificate not found'}), 404
+            return jsonify({'message': 'certificate not found','status':'failed'}), 404
     except Exception as e:
-        return jsonify({'message': 'Student record not saved','exception':  str(e)     }), 500
+        return jsonify({'message': 'Student record not saved','exception':  str(e),'status':'failed'}), 500
     finally:
         mycursor.close()
         mydb.close()
@@ -157,14 +164,58 @@ def check_certificate(certificate_id):
         if student:
             student =student[0]
             print(student)
-            return jsonify({'studentId': student[0], 'fname': student[1], 'lname':student[2], 'certNo':student[3] }),200
+            return jsonify({'studentId': student[0], 'fname': student[1], 'lname':student[2], 'certNo':student[3], 'status' : 'success' }),200
         else:
-            return jsonify({'message': 'certificate not found'}), 404
+            return jsonify({'message': 'certificate not found', 'status' : 'failed'}), 404
     except Exception as e:
-        return jsonify({'message': 'Student record not saved','exception':  str(e)     }), 500
+        return jsonify({'message': 'certificate not found','exception':  str(e), 'status' : 'failed'}), 500
     finally:
         mycursor.close()
         mydb.close()
+
+# Update person details 
+@app.route('/updateperson/<email_id>', methods=['PUT'])
+def update_person(email_id):
+    # establish database connection
+    if not (session['username'] == 'root@root.com'):
+        return jsonify({'message': 'Student record not updated','exception':  'No rights to update','status' : 'failed'})
+    mydb = mysql.connector.connect(
+    host="db4free.net",
+    port=3306,
+    user="infrafinal",
+    password="infrafinal2505",
+    database="studentinfra"
+    )
+    # create cursor
+    mycursor = mydb.cursor()
+    try:
+        mydb.start_transaction()
+        studentId = request.json['studentId']
+        fName = request.json['fName']
+        lName = request.json['lName']
+        graduationYear = request.json['graduationYear']
+        number = request.json['number']
+        if len(number) != 12:
+             raise StringLengthError("Incorrect phone number")
+        role = request.json['role']
+        statement = 'UPDATE student SET studentId = %s, fname = %s, lname = %s, graduationYear = %s, role = %s, number = %s WHERE email = %s'
+        values = (studentId, fName, lName, graduationYear, role, number)
+        mycursor.execute(statement, values)
+        print("Student data Updated")
+        mydb.commit()
+        return jsonify({'message': 'Student record updated successfully','status' : 'success'}), 201
+    except Exception as e:
+        return jsonify({'message': 'Student record not updated','exception':  str(e),'status' : 'failed'}), 500
+    finally:
+        mycursor.close()
+        mydb.close()
+
+#log currently logged in person out
+@app.route('/logout', methods=['PUT'])
+def logout():
+    # Clear the user's session data
+    session.clear()
+    return jsonify({'status':'success'})
 
 # Run the Flask app
 if __name__ == '__main__':
