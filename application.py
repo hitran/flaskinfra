@@ -102,9 +102,9 @@ def login():
                 session['username'] = request.json['email']
                 return jsonify({'Email Id': request.json['email'], 'status':'success', 'role' : str(student[0][1]) }), 200
             else:
-                return jsonify({'Email Id': request.json['email'], 'status':'failed', 'reason': 'incorrect password'}), 404
+                return jsonify({'Email Id': request.json['email'], 'status':'failed', 'reason': 'incorrect email/password'}), 404
         else:
-            return jsonify({'Email Id': request.json['email'], 'status':'failed', 'reason': 'incorrect email'}), 404
+            return jsonify({'Email Id': request.json['email'], 'status':'failed', 'reason': 'incorrect email/password'}), 404
     except Exception as e:
         return jsonify({'message': 'Student record not found','exception':  str(e),'status':'failed'}), 500
     finally:
