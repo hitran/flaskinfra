@@ -88,6 +88,7 @@ def login():
         if student:
             print(student)
             if bcrypt.checkpw(request.json['password'].encode('utf-8'), student[0][0].encode()): 
+                session.clear()
                 session['logged_in'] = True
                 session['username'] = request.json['email']
                 return jsonify({'Email Id': request.json['email'], 'status':'success', 'role' : str(student[0][1]) }), 200
@@ -148,6 +149,21 @@ def check_certificate(certificate_id):
     mycursor = mydb.cursor()
     try:    
         print("Certificate ID is  : " + certificate_id)
+        mycursor.execute("SELECT student.email FROM student JOIN certificate on certificate.certNo = student.certNo WHERE certificate.certNo = %s", (certificate_id,))
+        student_email = mycursor.fetchall()
+        print("Student email ID is  : " + student_email[0][0] ) 
+        print("The current session user is" + str(session.get('username')))
+        if (session.get('username') == student_email[0][0]):
+            print("The current session user is" + str(session.get('username')))
+            mycursor.execute("SELECT student.studentId, student.fname, student.lname, certificate.certNo,certificate.document FROM certificate JOIN student on certificate.certNo = student.certNo WHERE student.email = %s", (email_id,))
+            certificate = mycursor.fetchall()
+            if certificate:
+                print(certificate)
+                certificate =certificate[0]
+                return jsonify({'studentId': certificate[0], 'fname': certificate[1], 'lname':certificate[2], 'certNo':certificate[3], 'document': str(certificate[4]),'status':'success'}), 200
+            else:
+                return jsonify({'message': 'certificate not found','status':'failed'}), 404
+        #----------------------------------------------------
         mycursor.execute("SELECT student.studentId, student.fname, student.lname, certificate.certNo FROM student JOIN certificate on certificate.certNo = student.certNo WHERE certificate.certNo = %s", (certificate_id,))
         student = mycursor.fetchall()
         print(student)
@@ -200,7 +216,7 @@ def update_person(email_id):
         mycursor.close()
         mydb.close()
 
-#log currently logged in person out
+# log currently logged in person out
 @app.route('/logout', methods=['PUT'])
 def logout():
     # Clear the user's session data
