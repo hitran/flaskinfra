@@ -155,7 +155,7 @@ def check_certificate(certificate_id):
         print("The current session user is" + str(session.get('username')))
         if (session.get('username') == student_email[0][0]):
             print("The current session user is" + str(session.get('username')))
-            mycursor.execute("SELECT student.studentId, student.fname, student.lname, certificate.certNo,certificate.document FROM certificate JOIN student on certificate.certNo = student.certNo WHERE student.email = %s", (email_id,))
+            mycursor.execute("SELECT student.studentId, student.fname, student.lname, certificate.certNo,certificate.document FROM certificate JOIN student on certificate.certNo = student.certNo WHERE student.email = %s", (student_email[0][0],))
             certificate = mycursor.fetchall()
             if certificate:
                 print(certificate)
@@ -196,7 +196,6 @@ def update_person(email_id):
     mycursor = mydb.cursor()
     try:
         mydb.start_transaction()
-        studentId = request.json['studentId']
         fName = request.json['fName']
         lName = request.json['lName']
         graduationYear = request.json['graduationYear']
@@ -204,8 +203,8 @@ def update_person(email_id):
         if len(number) != 12:
              raise StringLengthError("Incorrect phone number")
         role = request.json['role']
-        statement = 'UPDATE student SET studentId = %s, fname = %s, lname = %s, graduationYear = %s, role = %s, number = %s WHERE email = %s'
-        values = (studentId, fName, lName, graduationYear, role, number)
+        statement = 'UPDATE student SET fname = %s, lname = %s, graduationYear = %s, role = %s, number = %s WHERE email = %s'
+        values = (fName, lName, graduationYear, role, number,email_id)
         mycursor.execute(statement, values)
         print("Student data Updated")
         mydb.commit()
