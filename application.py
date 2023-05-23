@@ -11,8 +11,8 @@ class StringLengthError(Exception):
 
 app = Flask(__name__)
 app.secret_key = 'infrafinal'
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+# app.config['SESSION_COOKIE_SECURE'] = True
+# app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 
 # Define the routes for CRUD operations
 
@@ -105,7 +105,8 @@ def login():
 # Fetch certificate details
 @app.route('/certificate/<email_id>', methods=['GET'])
 def get_certificate(email_id):
-    
+    if not (session.get('username') == email_id):
+        return jsonify({'message': 'Invalid user data access','exception':  'No rights to view','status' : 'failed'}), 404
     # establish database connection
     mydb = mysql.connector.connect(
     host="db4free.net",
@@ -118,8 +119,7 @@ def get_certificate(email_id):
     mycursor = mydb.cursor()
     try:   
         print("Student email ID is  : " + email_id ) 
-        if not (session.get('username') == email_id):
-            return jsonify({'message': 'Invalid user data access','exception':  'No rights to view','status' : 'failed'}), 404
+        
         mycursor.execute("SELECT student.studentId, student.fname, student.lname, certificate.certNo,certificate.document FROM certificate JOIN student on certificate.certNo = student.certNo WHERE student.email = %s", (email_id,))
         certificate = mycursor.fetchall()
         if certificate:
@@ -221,6 +221,43 @@ def logout():
     # Clear the user's session data
     session.clear()
     return jsonify({'status':'success'})
+
+
+# Fetch student details
+@app.route('/getstudents', methods=['GET'])
+def get_students():
+    try:
+        if not (session['username'] == 'root@root.com'):
+            return jsonify({'message': 'Student record not updated','exception':  'No rights to view student details','status' : 'failed'})
+    except:
+         return jsonify({'message': 'Student record not updated','exception':  'No rights to view student details','status' : 'failed'})
+    # establish database connection
+    mydb = mysql.connector.connect(
+    host="db4free.net",
+    port=3306,
+    user="infrafinal",
+    password="infrafinal2505",
+    database="studentinfra"
+    )
+    # create cursor
+    mycursor = mydb.cursor()
+    try:   
+        mycursor.execute("SELECT * FROM student")
+        students = mycursor.fetchall()
+        studentsJson = []
+        if students:
+            for student in students:
+                studentJson = {'studentId': student[0], 'fName': student[1], 'lName ':student[2], 'graduationYear':student[3],'email': student[4],'certNo': student[6],'role': student[7],'number': student[8]}
+                studentsJson.append(studentJson)
+            return jsonify({'students':studentsJson,'status':'success'}), 200
+        else:
+            return jsonify({'message': 'students not found. oh no','status':'failed'}), 404
+    except Exception as e:
+        return jsonify({'message': 'Student record not fetched','exception':  str(e),'status':'failed'}), 500
+    finally:
+        mycursor.close()
+        mydb.close()
+
 
 # Run the Flask app
 if __name__ == '__main__':
