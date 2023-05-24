@@ -11,8 +11,8 @@ class StringLengthError(Exception):
 
 app = Flask(__name__)
 app.secret_key = 'infrafinal'
-# app.config['SESSION_COOKIE_SECURE'] = True
-# app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 
 # Define the routes for CRUD operations
 
